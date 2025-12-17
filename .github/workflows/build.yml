@@ -26,7 +26,9 @@ jobs:
           cache-read-only: false
 
       - name: Build with Gradle
-        run: ./gradlew assembleDebug
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
