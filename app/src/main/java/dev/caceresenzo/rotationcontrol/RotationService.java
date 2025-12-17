@@ -65,6 +65,9 @@ public class RotationService extends Service {
     public static final String ACTION_REFRESH_MODE = "REFRESH_MODE";
     public static final int ACTION_REFRESH_MODE_REQUEST_CODE = 40;
 
+    public static final String ACTION_TOGGLE_SERVICE = "TOGGLE_SERVICE";
+    public static final int ACTION_TOGGLE_SERVICE_REQUEST_CODE = 50;
+
     public static final String TINT_METHOD = "setColorFilter";
 
     public static final String ACTION_NOTIFY_CREATED = "dev.caceresenzo.rotationcontrol.SERVICE_CREATED";
@@ -94,6 +97,7 @@ public class RotationService extends Service {
     private @Getter RotationMode activeMode = RotationMode.AUTO;
     private @Getter RotationMode previousActiveMode = null;
     private @Getter boolean currentlyRefreshing = false;
+    private @Getter boolean isServiceEnabled = true;
 
     private @Getter AutoLockSettings autoLock = new AutoLockSettings();
     private @Getter int lastDisplayRotationValue = -1;
@@ -279,6 +283,18 @@ public class RotationService extends Service {
                 break;
             }
 
+            case ACTION_TOGGLE_SERVICE: {
+                isServiceEnabled = !isServiceEnabled;
+                Log.i(TAG, String.format("toggled service enabled=%s", isServiceEnabled));
+
+                PreferenceManager.getDefaultSharedPreferences(this)
+                        .edit()
+                        .putBoolean(getString(R.string.service_enabled_key), isServiceEnabled)
+                        .apply();
+
+                break;
+            }
+
             default: {
                 Log.i(TAG, String.format("unknown action - action=%s", action));
                 return START_NOT_STICKY;
@@ -391,7 +407,7 @@ public class RotationService extends Service {
         if (showNotification) {
             RemoteViews layout = new RemoteViews(getPackageName(), R.layout.notification);
             layout.setOnClickPendingIntent(R.id.guard, newGuardPendingIntent());
-            layout.setOnClickPendingIntent(R.id.refresh, newRefreshModePendingIntent());
+            layout.setOnClickPendingIntent(R.id.toggle_service, newToggleServicePendingIntent());
 
             for (RotationMode mode : RotationMode.values()) {
                 // Log.i(TAG, String.format("attach intent - mode=%s viewId=%d", mode, mode.viewId()));
@@ -451,6 +467,7 @@ public class RotationService extends Service {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         guard = preferences.getBoolean(getString(R.string.guard_key), true);
+        isServiceEnabled = preferences.getBoolean(getString(R.string.service_enabled_key), true);
         activeMode = RotationMode.fromPreferences(this);
 
         autoLock.load(preferences);
@@ -476,17 +493,31 @@ public class RotationService extends Service {
             layout.setInt(mode.viewId(), TINT_METHOD, getColor(R.color.inactive));
         }
 
-        layout.setInt(activeMode.viewId(), TINT_METHOD, getColor(R.color.active));
+        if (isServiceEnabled) {
+            layout.setInt(activeMode.viewId(), TINT_METHOD, getColor(R.color.active));
+            layout.setInt(R.id.toggle_service, TINT_METHOD, getColor(R.color.active));
 
-        if (isGuardEnabledOrForced()) {
-            layout.setInt(R.id.guard, TINT_METHOD, getColor(R.color.active));
+            if (isGuardEnabledOrForced()) {
+                layout.setInt(R.id.guard, TINT_METHOD, getColor(R.color.active));
+            } else {
+                layout.setInt(R.id.guard, TINT_METHOD, getColor(R.color.inactive));
+            }
         } else {
+            layout.setInt(R.id.toggle_service, TINT_METHOD, getColor(R.color.inactive));
             layout.setInt(R.id.guard, TINT_METHOD, getColor(R.color.inactive));
         }
     }
 
     private void applyMode() {
         ContentResolver contentResolver = getContentResolver();
+
+        if (!isServiceEnabled) {
+            if (mView != null) {
+                getWindowManager().removeView(mView);
+                mView = null;
+            }
+            return;
+        }
 
         if (isGuardEnabledOrForced()) {
             WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(
@@ -550,6 +581,18 @@ public class RotationService extends Service {
         return PendingIntent.getService(
                 this,
                 ACTION_REFRESH_NOTIFICATION_REQUEST_CODE,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+    }
+
+    private PendingIntent newToggleServicePendingIntent() {
+        Intent intent = new Intent(getApplicationContext(), RotationService.class);
+        intent.setAction(ACTION_TOGGLE_SERVICE);
+
+        return PendingIntent.getService(
+                this,
+                ACTION_TOGGLE_SERVICE_REQUEST_CODE,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );

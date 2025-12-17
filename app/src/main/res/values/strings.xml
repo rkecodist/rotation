@@ -136,4 +136,6 @@
 
     <string name="presets_used_key">presets_used</string>
     <string name="presets_notified_accessibility_key">presets_notified_accessibility</string>
+
+    <string name="service_enabled_key">service_enabled</string>
 </resources>
