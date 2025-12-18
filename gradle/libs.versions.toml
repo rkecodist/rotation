@@ -28,3 +28,18 @@ lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+
+[libraries.junit]
+group = "junit"
+name = "junit"
+version = "4.13.2"
+
+[libraries.androidx-test-ext-junit]
+group = "androidx.test.ext"
+name = "junit"
+version = "1.1.5"
+
+[libraries.espresso-core]
+group = "androidx.test.espresso"
+name = "espresso-core"
+version = "3.5.1"
