@@ -17,6 +17,8 @@
     <color name="navy">#000080</color>
     <color name="black">#000000</color>
 
+    <color name="brand_blue">#5F97F4</color>
+
     <color name="inactive">@color/black</color>
-    <color name="active">@color/design_default_color_primary</color>
+    <color name="active">@color/brand_blue</color>
 </resources>

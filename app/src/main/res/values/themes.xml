@@ -3,7 +3,11 @@
 
     <style name="AppTheme"></style>
 
-    <style name="AppTheme.Application" parent="@style/Theme.AppCompat.DayNight" />
+    <style name="AppTheme.Application" parent="@style/Theme.AppCompat.DayNight">
+        <item name="colorPrimary">@color/active</item>
+        <item name="colorPrimaryDark">@color/active</item>
+        <item name="colorAccent">@color/active</item>
+    </style>
 
     <style name="AppTheme.NotificationButton">
         <item name="android:padding">2dp</item>
