@@ -362,12 +362,13 @@ public class RotationService extends Service {
         RotationSharedPreferences preferences = RotationSharedPreferences.from(this);
         preferences.setStartControl(true);
 
-        notificationManager.notify(PRESETS_NOTIFICATION_ID, createPresetsNotification());
-
-        if (preferences.hasPresetsBeenUsed() && !preferences.hasBeenNotifiedAboutAccessibilityNotEnabledForPresets() && !SettingsFragment.isAccessibilityServiceEnabled(this)) {
-            notificationManager.notify(PRESETS_NOTIFICATION_ID, createPresetsNotification());
-            preferences.markAccessibilityNotEnabledForPresetsAsNotified();
-        }
+        // Removed accessibility notification logic as requested.
+        // notificationManager.notify(PRESETS_NOTIFICATION_ID, createPresetsNotification());
+        //
+        // if (preferences.hasPresetsBeenUsed() && !preferences.hasBeenNotifiedAboutAccessibilityNotEnabledForPresets() && !SettingsFragment.isAccessibilityServiceEnabled(this)) {
+        //     notificationManager.notify(PRESETS_NOTIFICATION_ID, createPresetsNotification());
+        //     preferences.markAccessibilityNotEnabledForPresetsAsNotified();
+        // }
     }
 
     private void setupAutoLock() {
