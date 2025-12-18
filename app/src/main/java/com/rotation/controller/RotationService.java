@@ -271,6 +271,8 @@ public class RotationService extends Service {
             }
 
             case ACTION_REFRESH_NOTIFICATION: {
+                Log.i(TAG, "Refresh notification action triggered - re-applying mode");
+                afterStartCommand();
                 break;
             }
 
@@ -459,6 +461,7 @@ public class RotationService extends Service {
             layout.setOnClickPendingIntent(R.id.guard, newGuardPendingIntent());
             layout.setOnClickPendingIntent(R.id.toggle_service, newToggleServicePendingIntent());
             layout.setOnClickPendingIntent(R.id.exit_service, newExitServicePendingIntent());
+            layout.setOnClickPendingIntent(R.id.refresh, newRefreshPendingIntent());
 
             for (RotationMode mode : RotationMode.values()) {
                 // Log.i(TAG, String.format("attach intent - mode=%s viewId=%d", mode, mode.viewId()));
@@ -558,10 +561,23 @@ public class RotationService extends Service {
             layout.setViewVisibility(R.id.exit_service, View.VISIBLE);
         }
 
+        if (enabledButtons != null && !enabledButtons.contains("GUARD")) {
+            layout.setViewVisibility(R.id.guard, View.GONE);
+        } else {
+            layout.setViewVisibility(R.id.guard, View.VISIBLE);
+        }
+
+        if (enabledButtons != null && !enabledButtons.contains("REFRESH")) {
+            layout.setViewVisibility(R.id.refresh, View.GONE);
+        } else {
+            layout.setViewVisibility(R.id.refresh, View.VISIBLE);
+        }
+
         if (isServiceEnabled) {
             layout.setInt(activeMode.viewId(), TINT_METHOD, getColor(R.color.active));
             layout.setInt(R.id.toggle_service, TINT_METHOD, getColor(R.color.active));
-            layout.setInt(R.id.exit_service, TINT_METHOD, getColor(R.color.inactive)); // Exit is always inactive color or maybe normal
+            layout.setInt(R.id.exit_service, TINT_METHOD, getColor(R.color.inactive));
+            layout.setInt(R.id.refresh, TINT_METHOD, getColor(R.color.inactive));
 
             if (isGuardEnabledOrForced()) {
                 layout.setInt(R.id.guard, TINT_METHOD, getColor(R.color.active));
@@ -572,6 +588,7 @@ public class RotationService extends Service {
             layout.setInt(R.id.toggle_service, TINT_METHOD, getColor(R.color.inactive));
             layout.setInt(R.id.guard, TINT_METHOD, getColor(R.color.inactive));
             layout.setInt(R.id.exit_service, TINT_METHOD, getColor(R.color.inactive));
+            layout.setInt(R.id.refresh, TINT_METHOD, getColor(R.color.inactive));
         }
     }
 

@@ -23,5 +23,6 @@
         <item name="windowNoTitle">true</item>
         <item name="android:windowMinWidthMajor">80%</item>
         <item name="android:windowMinWidthMinor">90%</item>
+        <item name="android:colorBackground">@color/dialog_background</item>
     </style>
 </resources>

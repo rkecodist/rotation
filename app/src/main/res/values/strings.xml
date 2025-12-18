@@ -78,6 +78,8 @@
 
     <string name="button_power">Power</string>
     <string name="button_exit">Exit</string>
+    <string name="button_guard">Guard</string>
+    <string name="button_refresh">Refresh</string>
 
     <string name="buttons_key">buttons</string>
     <string name="buttons_title">Mode Buttons</string>

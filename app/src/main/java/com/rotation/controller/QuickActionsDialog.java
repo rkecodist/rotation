@@ -151,6 +151,11 @@ public class QuickActionsDialog extends Dialog implements View.OnClickListener, 
         }
 
         ImageView guardView = findViewById(R.id.guard);
+        if (enabledButtons != null && !enabledButtons.contains("GUARD")) {
+            guardView.setVisibility(View.GONE);
+        } else {
+            guardView.setVisibility(View.VISIBLE);
+        }
         setActiveColor(context, guardView, guard);
 
         boolean isServiceEnabled = preferences.getBoolean(context.getString(R.string.service_enabled_key), true);

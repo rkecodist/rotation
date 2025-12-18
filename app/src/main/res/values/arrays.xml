@@ -1,5 +1,7 @@
 <resources>
     <string-array name="buttons_entries">
+        <item>@string/button_guard</item>
+        <item>@string/button_refresh</item>
         <item>@string/button_power</item>
         <item>@string/button_exit</item>
         <item>@string/mode_auto</item>
@@ -12,6 +14,8 @@
     </string-array>
 
     <string-array name="buttons_values">
+        <item>GUARD</item>
+        <item>REFRESH</item>
         <item>POWER</item>
         <item>EXIT</item>
         <item>AUTO</item>
@@ -24,6 +28,7 @@
     </string-array>
 
     <string-array name="buttons_values_defaults">
+        <item>GUARD</item>
         <item>POWER</item>
         <item>AUTO</item>
         <item>PORTRAIT</item>
