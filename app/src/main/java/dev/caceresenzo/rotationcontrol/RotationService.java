@@ -516,6 +516,7 @@ public class RotationService extends Service {
                 getWindowManager().removeView(mView);
                 mView = null;
             }
+            Settings.System.putInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 1);
             return;
         }
 
