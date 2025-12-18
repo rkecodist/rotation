@@ -102,6 +102,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             Preference preference = findPreference(key);
             preference.setOnPreferenceClickListener(this);
         }
+
+        {
+            String key = getString(R.string.smart_charge_key);
+            findPreference(key).setOnPreferenceClickListener(this);
+        }
     }
 
     @Override
@@ -188,6 +193,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             } else {
                 requestAccessibilityService(context);
             }
+        } else if (getString(R.string.smart_charge_key).equals(key)) {
+            new SmartChargeDialogFragment().show(getParentFragmentManager(), SmartChargeDialogFragment.TAG);
         }
 
         return true;

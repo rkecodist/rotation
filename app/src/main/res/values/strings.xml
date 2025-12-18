@@ -143,8 +143,15 @@
     <string name="saved_user_rotation_key">saved_user_rotation</string>
 
     <string name="smart_charge_key">smart_charge</string>
-    <string name="smart_charge_title">Smart Charge Rotation</string>
-    <string name="smart_charge_description">Automatically set to Reverse Portrait when charging.</string>
+    <string name="smart_charge_title">Smart Charge Settings</string>
+    <string name="smart_charge_description">Configure behavior when charging.</string>
+    <string name="smart_charge_connect_header">When Charger Connected</string>
+    <string name="smart_charge_disconnect_header">When Charger Disconnected</string>
+    <string name="mode_last_used">Restore Last Used Mode</string>
+    <string name="mode_none">Do Nothing</string>
+
+    <string name="smart_charge_connect_mode_key">smart_charge_connect_mode</string>
+    <string name="smart_charge_disconnect_mode_key">smart_charge_disconnect_mode</string>
 
     <string name="saved_original_mode_for_charge_key">saved_original_mode_for_charge</string>
 </resources>

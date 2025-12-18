@@ -833,26 +833,36 @@ public class RotationService extends Service {
 
             String action = intent.getAction();
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-            boolean smartChargeEnabled = preferences.getBoolean(getString(R.string.smart_charge_key), false);
-
-            if (!smartChargeEnabled) {
-                return;
-            }
 
             if (Intent.ACTION_POWER_CONNECTED.equals(action)) {
-                Log.i(TAG, "Charger connected, applying Reverse Portrait.");
+                String modeStr = preferences.getString(getString(R.string.smart_charge_connect_mode_key), SmartChargeDialogFragment.VALUE_NONE);
+                if (SmartChargeDialogFragment.VALUE_NONE.equals(modeStr)) {
+                    return;
+                }
+
+                Log.i(TAG, "Charger connected, applying " + modeStr);
                 // Save current activeMode before overriding for charge mode
                 preferences.edit()
                         .putString(getString(R.string.saved_original_mode_for_charge_key), activeMode.name())
                         .apply();
-                
-                activeMode = RotationMode.PORTRAIT_REVERSE;
+
+                activeMode = RotationMode.valueOf(modeStr);
                 afterStartCommand();
             } else if (Intent.ACTION_POWER_DISCONNECTED.equals(action)) {
-                Log.i(TAG, "Charger disconnected, restoring original mode.");
-                // Restore original activeMode
-                String originalModeName = preferences.getString(getString(R.string.saved_original_mode_for_charge_key), RotationMode.AUTO.name());
-                activeMode = RotationMode.valueOf(originalModeName);
+                String modeStr = preferences.getString(getString(R.string.smart_charge_disconnect_mode_key), SmartChargeDialogFragment.VALUE_LAST_USED);
+                if (SmartChargeDialogFragment.VALUE_NONE.equals(modeStr)) {
+                    return;
+                }
+
+                Log.i(TAG, "Charger disconnected, applying " + modeStr);
+                if (SmartChargeDialogFragment.VALUE_LAST_USED.equals(modeStr)) {
+                    // Restore original activeMode
+                    String originalModeName = preferences.getString(getString(R.string.saved_original_mode_for_charge_key), RotationMode.AUTO.name());
+                    activeMode = RotationMode.valueOf(originalModeName);
+                } else {
+                    activeMode = RotationMode.valueOf(modeStr);
+                }
+
                 afterStartCommand();
             }
         }
