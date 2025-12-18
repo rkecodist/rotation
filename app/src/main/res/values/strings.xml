@@ -138,4 +138,7 @@
     <string name="presets_notified_accessibility_key">presets_notified_accessibility</string>
 
     <string name="service_enabled_key">service_enabled</string>
+
+    <string name="saved_accel_rotation_key">saved_accel_rotation</string>
+    <string name="saved_user_rotation_key">saved_user_rotation</string>
 </resources>

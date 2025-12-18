@@ -123,6 +123,10 @@ public class RotationService extends Service {
         createNotificationChannel(WARNING_CHANNEL_ID, R.string.warning_notification_channel_name);
         loadFromPreferences();
 
+        if (isServiceEnabled) {
+            saveSystemState();
+        }
+
         mHandler = new Handler(Looper.getMainLooper());
 
         mUnlockBroadcastReceiver = new UnlockBroadcastReceiver();
@@ -166,6 +170,8 @@ public class RotationService extends Service {
 
         mHandler.removeCallbacks(mBroadcastToggleGuardIntent);
         mHandler.removeCallbacks(mTriggerAutoLock);
+
+        restoreSystemState();
 
         stopForeground(STOP_FOREGROUND_REMOVE);
         stopSelf();
@@ -284,6 +290,7 @@ public class RotationService extends Service {
             }
 
             case ACTION_TOGGLE_SERVICE: {
+                boolean wasEnabled = isServiceEnabled;
                 isServiceEnabled = !isServiceEnabled;
                 Log.i(TAG, String.format("toggled service enabled=%s", isServiceEnabled));
 
@@ -291,6 +298,12 @@ public class RotationService extends Service {
                         .edit()
                         .putBoolean(getString(R.string.service_enabled_key), isServiceEnabled)
                         .apply();
+
+                if (isServiceEnabled && !wasEnabled) {
+                    saveSystemState();
+                } else if (!isServiceEnabled && wasEnabled) {
+                    restoreSystemState();
+                }
 
                 break;
             }
@@ -516,7 +529,7 @@ public class RotationService extends Service {
                 getWindowManager().removeView(mView);
                 mView = null;
             }
-            Settings.System.putInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 1);
+            // Logic handled by restoreSystemState called in ACTION_TOGGLE_SERVICE
             return;
         }
 
@@ -740,6 +753,38 @@ public class RotationService extends Service {
         }
 
         return false;
+    }
+
+    private void saveSystemState() {
+        try {
+            int accelRotation = Settings.System.getInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION);
+            int userRotation = Settings.System.getInt(getContentResolver(), Settings.System.USER_ROTATION, 0);
+
+            PreferenceManager.getDefaultSharedPreferences(this)
+                    .edit()
+                    .putInt(getString(R.string.saved_accel_rotation_key), accelRotation)
+                    .putInt(getString(R.string.saved_user_rotation_key), userRotation)
+                    .apply();
+
+            Log.i(TAG, String.format("Saved system state: accel=%d, user=%d", accelRotation, userRotation));
+        } catch (Settings.SettingNotFoundException e) {
+            Log.e(TAG, "Failed to save system state", e);
+        }
+    }
+
+    private void restoreSystemState() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        int accelRotation = prefs.getInt(getString(R.string.saved_accel_rotation_key), -1);
+        int userRotation = prefs.getInt(getString(R.string.saved_user_rotation_key), -1);
+
+        if (accelRotation != -1) {
+            Settings.System.putInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, accelRotation);
+        }
+        if (userRotation != -1) {
+            Settings.System.putInt(getContentResolver(), Settings.System.USER_ROTATION, userRotation);
+        }
+
+        Log.i(TAG, String.format("Restored system state: accel=%d, user=%d", accelRotation, userRotation));
     }
 
     public class LocalBinder extends Binder {
