@@ -45,8 +45,8 @@ public class QuickActionsDialog extends Dialog implements View.OnClickListener, 
         ImageView guardView = findViewById(R.id.guard);
         guardView.setOnClickListener(this);
 
-        ImageView refreshButton = findViewById(R.id.refresh);
-        refreshButton.setOnClickListener(this);
+        ImageView toggleServiceButton = findViewById(R.id.toggle_service);
+        toggleServiceButton.setOnClickListener(this);
 
         TextView infoView = findViewById(R.id.info);
         if (RotationService.isRunning(getContext())) {
@@ -65,8 +65,8 @@ public class QuickActionsDialog extends Dialog implements View.OnClickListener, 
         int viewId = view.getId();
         if (viewId == R.id.guard) {
             intent = RotationService.newToggleGuardIntent(context);
-        } else if (viewId == R.id.refresh) {
-            intent = RotationService.newRefreshModeIntent(context);
+        } else if (viewId == R.id.toggle_service) {
+            intent = RotationService.newToggleServiceIntent(context);
         } else {
             RotationMode newMode = RotationMode.fromViewId(viewId);
             if (newMode != null) {
@@ -152,6 +152,10 @@ public class QuickActionsDialog extends Dialog implements View.OnClickListener, 
 
         ImageView guardView = findViewById(R.id.guard);
         setActiveColor(context, guardView, guard);
+
+        boolean isServiceEnabled = preferences.getBoolean(context.getString(R.string.service_enabled_key), true);
+        ImageView toggleServiceView = findViewById(R.id.toggle_service);
+        setActiveColor(context, toggleServiceView, isServiceEnabled);
     }
 
     private void setActiveColor(Context context, ImageView view, boolean active) {

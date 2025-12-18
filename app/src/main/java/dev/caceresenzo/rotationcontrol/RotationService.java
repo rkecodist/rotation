@@ -652,6 +652,13 @@ public class RotationService extends Service {
         return intent;
     }
 
+    public static Intent newToggleServiceIntent(Context context) {
+        Intent intent = new Intent(context.getApplicationContext(), RotationService.class);
+        intent.setAction(ACTION_TOGGLE_SERVICE);
+
+        return intent;
+    }
+
     private NotificationManager getNotificationManager() {
         return (NotificationManager) getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
     }
