@@ -107,6 +107,7 @@ public class RotationService extends Service {
     private Handler mHandler;
     private UnlockBroadcastReceiver mUnlockBroadcastReceiver;
     private OrientationBroadcastReceiver mOrientationReceiver;
+    private ChargeBroadcastReceiver mChargeReceiver;
 
     @Nullable
     @Override
@@ -135,6 +136,12 @@ public class RotationService extends Service {
         mOrientationReceiver = new OrientationBroadcastReceiver();
         registerReceiver(mOrientationReceiver, new IntentFilter(Intent.ACTION_CONFIGURATION_CHANGED));
 
+        mChargeReceiver = new ChargeBroadcastReceiver();
+        IntentFilter chargeFilter = new IntentFilter();
+        chargeFilter.addAction(Intent.ACTION_POWER_CONNECTED);
+        chargeFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+        registerReceiver(mChargeReceiver, chargeFilter);
+
         setupAutoLock();
 
         sendBroadcast(new Intent(ACTION_NOTIFY_CREATED));
@@ -157,6 +164,11 @@ public class RotationService extends Service {
         if (mOrientationReceiver != null) {
             unregisterReceiver(mOrientationReceiver);
             mOrientationReceiver = null;
+        }
+
+        if (mChargeReceiver != null) {
+            unregisterReceiver(mChargeReceiver);
+            mChargeReceiver = null;
         }
 
         sendBroadcast(new Intent(ACTION_NOTIFY_DESTROYED));
@@ -808,6 +820,41 @@ public class RotationService extends Service {
             this.force = preferences.getBoolean(getString(R.string.auto_lock_force_key), false);
         }
 
+    }
+
+    public class ChargeBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null || !isServiceEnabled) {
+                return;
+            }
+
+            String action = intent.getAction();
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+            boolean smartChargeEnabled = preferences.getBoolean(getString(R.string.smart_charge_key), false);
+
+            if (!smartChargeEnabled) {
+                return;
+            }
+
+            if (Intent.ACTION_POWER_CONNECTED.equals(action)) {
+                Log.i(TAG, "Charger connected, applying Reverse Portrait.");
+                // Save current activeMode before overriding for charge mode
+                preferences.edit()
+                        .putString(getString(R.string.saved_original_mode_for_charge_key), activeMode.name())
+                        .apply();
+                
+                activeMode = RotationMode.PORTRAIT_REVERSE;
+                afterStartCommand();
+            } else if (Intent.ACTION_POWER_DISCONNECTED.equals(action)) {
+                Log.i(TAG, "Charger disconnected, restoring original mode.");
+                // Restore original activeMode
+                String originalModeName = preferences.getString(getString(R.string.saved_original_mode_for_charge_key), RotationMode.AUTO.name());
+                activeMode = RotationMode.valueOf(originalModeName);
+                afterStartCommand();
+            }
+        }
     }
 
 }

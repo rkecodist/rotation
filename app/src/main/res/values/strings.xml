@@ -141,4 +141,10 @@
 
     <string name="saved_accel_rotation_key">saved_accel_rotation</string>
     <string name="saved_user_rotation_key">saved_user_rotation</string>
+
+    <string name="smart_charge_key">smart_charge</string>
+    <string name="smart_charge_title">Smart Charge Rotation</string>
+    <string name="smart_charge_description">Automatically set to Reverse Portrait when charging.</string>
+
+    <string name="saved_original_mode_for_charge_key">saved_original_mode_for_charge</string>
 </resources>

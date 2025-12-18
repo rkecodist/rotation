@@ -71,6 +71,13 @@
             app:summary="@string/show_notification_description"
             app:title="@string/show_notification_title" />
 
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:iconSpaceReserved="false"
+            app:key="@string/smart_charge_key"
+            app:summary="@string/smart_charge_description"
+            app:title="@string/smart_charge_title" />
+
         <ListPreference
             app:defaultValue="SHOW_MODES_IF_CONTROLLING"
             app:entries="@array/tile_click_behavior_entries"
