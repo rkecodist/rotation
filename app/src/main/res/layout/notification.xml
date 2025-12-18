@@ -50,4 +50,9 @@
         style="@style/AppTheme.NotificationButton"
         android:src="@drawable/ic_power" />
 
+    <ImageView
+        android:id="@+id/exit_service"
+        style="@style/AppTheme.NotificationButton"
+        android:src="@drawable/ic_close" />
+
 </LinearLayout>

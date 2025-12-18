@@ -76,6 +76,9 @@
     <string name="show_notification_title">Show Notification</string>
     <string name="show_notification_description">Users of the Quick Settings tile probably don\'t have a need for it.</string>
 
+    <string name="button_power">Power</string>
+    <string name="button_exit">Exit</string>
+
     <string name="buttons_key">buttons</string>
     <string name="buttons_title">Mode Buttons</string>
     <string name="buttons_description">Select which buttons to display.</string>

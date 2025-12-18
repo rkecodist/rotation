@@ -1,5 +1,7 @@
 <resources>
     <string-array name="buttons_entries">
+        <item>@string/button_power</item>
+        <item>@string/button_exit</item>
         <item>@string/mode_auto</item>
         <item>@string/mode_portrait</item>
         <item>@string/mode_portrait_reverse</item>
@@ -10,6 +12,19 @@
     </string-array>
 
     <string-array name="buttons_values">
+        <item>POWER</item>
+        <item>EXIT</item>
+        <item>AUTO</item>
+        <item>PORTRAIT</item>
+        <item>PORTRAIT_REVERSE</item>
+        <item>PORTRAIT_SENSOR</item>
+        <item>LANDSCAPE</item>
+        <item>LANDSCAPE_REVERSE</item>
+        <item>LANDSCAPE_SENSOR</item>
+    </string-array>
+
+    <string-array name="buttons_values_defaults">
+        <item>POWER</item>
         <item>AUTO</item>
         <item>PORTRAIT</item>
         <item>PORTRAIT_REVERSE</item>

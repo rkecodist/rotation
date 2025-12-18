@@ -94,7 +94,7 @@
             app:title="@string/close_dialog_on_click_title" />
 
         <MultiSelectListPreference
-            app:defaultValue="@array/buttons_values"
+            app:defaultValue="@array/buttons_values_defaults"
             app:entries="@array/buttons_entries"
             app:entryValues="@array/buttons_values"
             app:iconSpaceReserved="false"

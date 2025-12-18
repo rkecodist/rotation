@@ -69,6 +69,9 @@ public class RotationService extends Service {
     public static final String ACTION_TOGGLE_SERVICE = "TOGGLE_SERVICE";
     public static final int ACTION_TOGGLE_SERVICE_REQUEST_CODE = 50;
 
+    public static final String ACTION_EXIT_SERVICE = "EXIT_SERVICE";
+    public static final int ACTION_EXIT_SERVICE_REQUEST_CODE = 60;
+
     public static final String TINT_METHOD = "setColorFilter";
 
     public static final String ACTION_NOTIFY_CREATED = "com.rotation.controller.SERVICE_CREATED";
@@ -335,6 +338,12 @@ public class RotationService extends Service {
                 break;
             }
 
+            case ACTION_EXIT_SERVICE: {
+                Log.i(TAG, "Exiting service via notification action");
+                onDestroy(); // This triggers stopSelf() and cleanup
+                return START_NOT_STICKY;
+            }
+
             default: {
                 Log.i(TAG, String.format("unknown action - action=%s", action));
                 return START_NOT_STICKY;
@@ -449,6 +458,7 @@ public class RotationService extends Service {
             RemoteViews layout = new RemoteViews(getPackageName(), R.layout.notification);
             layout.setOnClickPendingIntent(R.id.guard, newGuardPendingIntent());
             layout.setOnClickPendingIntent(R.id.toggle_service, newToggleServicePendingIntent());
+            layout.setOnClickPendingIntent(R.id.exit_service, newExitServicePendingIntent());
 
             for (RotationMode mode : RotationMode.values()) {
                 // Log.i(TAG, String.format("attach intent - mode=%s viewId=%d", mode, mode.viewId()));
@@ -529,14 +539,29 @@ public class RotationService extends Service {
         for (RotationMode mode : RotationMode.values()) {
             if (enabledButtons != null && !enabledButtons.contains(mode.name())) {
                 layout.setViewVisibility(mode.viewId(), View.GONE);
+            } else {
+                layout.setViewVisibility(mode.viewId(), View.VISIBLE);
             }
 
             layout.setInt(mode.viewId(), TINT_METHOD, getColor(R.color.inactive));
         }
 
+        if (enabledButtons != null && !enabledButtons.contains("POWER")) {
+            layout.setViewVisibility(R.id.toggle_service, View.GONE);
+        } else {
+            layout.setViewVisibility(R.id.toggle_service, View.VISIBLE);
+        }
+
+        if (enabledButtons != null && !enabledButtons.contains("EXIT")) {
+            layout.setViewVisibility(R.id.exit_service, View.GONE);
+        } else {
+            layout.setViewVisibility(R.id.exit_service, View.VISIBLE);
+        }
+
         if (isServiceEnabled) {
             layout.setInt(activeMode.viewId(), TINT_METHOD, getColor(R.color.active));
             layout.setInt(R.id.toggle_service, TINT_METHOD, getColor(R.color.active));
+            layout.setInt(R.id.exit_service, TINT_METHOD, getColor(R.color.inactive)); // Exit is always inactive color or maybe normal
 
             if (isGuardEnabledOrForced()) {
                 layout.setInt(R.id.guard, TINT_METHOD, getColor(R.color.active));
@@ -546,6 +571,7 @@ public class RotationService extends Service {
         } else {
             layout.setInt(R.id.toggle_service, TINT_METHOD, getColor(R.color.inactive));
             layout.setInt(R.id.guard, TINT_METHOD, getColor(R.color.inactive));
+            layout.setInt(R.id.exit_service, TINT_METHOD, getColor(R.color.inactive));
         }
     }
 
@@ -635,6 +661,18 @@ public class RotationService extends Service {
         return PendingIntent.getService(
                 this,
                 ACTION_TOGGLE_SERVICE_REQUEST_CODE,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+    }
+
+    private PendingIntent newExitServicePendingIntent() {
+        Intent intent = new Intent(getApplicationContext(), RotationService.class);
+        intent.setAction(ACTION_EXIT_SERVICE);
+
+        return PendingIntent.getService(
+                this,
+                ACTION_EXIT_SERVICE_REQUEST_CODE,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
