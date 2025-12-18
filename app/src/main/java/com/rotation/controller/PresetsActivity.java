@@ -11,8 +11,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -41,11 +44,13 @@ public class PresetsActivity extends AppCompatActivity {
             "com.android.systemui"
     );
 
-    private ProgressBar progressBar;
+    private LinearLayout loadingView;
+    private Switch showSystemAppsSwitch;
     private ApplicationListAdapter adapter;
     private List<ApplicationInfo> allApplications;
     private List<ApplicationInfo> filteredApplications;
     private RotationSharedPreferences preferences;
+    private String currentQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,13 +63,18 @@ public class PresetsActivity extends AppCompatActivity {
         }
 
         RecyclerView recyclerView = findViewById(R.id.list);
-        progressBar = findViewById(R.id.progress_bar);
+        loadingView = findViewById(R.id.loading_view);
+        showSystemAppsSwitch = findViewById(R.id.show_system_apps_switch);
 
         preferences = RotationSharedPreferences.from(this);
         preferences.markPresetsAsUsed();
 
         allApplications = new ArrayList<>();
         filteredApplications = new ArrayList<>();
+
+        // Initially show loading view
+        loadingView.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
 
         loadInstalledApplications();
 
@@ -76,6 +86,13 @@ public class PresetsActivity extends AppCompatActivity {
         });
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        showSystemAppsSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                applyFilter(currentQuery);
+            }
+        });
     }
 
     @Override
@@ -95,6 +112,7 @@ public class PresetsActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
+                currentQuery = newText;
                 applyFilter(newText);
                 return true;
             }
@@ -122,20 +140,30 @@ public class PresetsActivity extends AppCompatActivity {
             public void run() {
                 PackageManager packageManager = getPackageManager();
 
-                Intent mainIntent = new Intent();
                 List<android.content.pm.ApplicationInfo> resolveInfoList = packageManager.getInstalledApplications(0);
 
                 for (android.content.pm.ApplicationInfo resolveInfo : resolveInfoList) {
                     String packageName = resolveInfo.packageName;
+                    
+                    boolean ignored = false;
+                    for (String prefix : IGNORED_PREFIXES) {
+                        if (packageName.startsWith(prefix)) {
+                            ignored = true;
+                            break;
+                        }
+                    }
+                    if (ignored) continue;
+
                     String displayName = resolveInfo.loadLabel(packageManager).toString();
                     Drawable icon = resolveInfo.loadIcon(packageManager);
                     RotationMode currentMode = preferences.getApplicationMode(packageName);
+                    boolean isSystem = (resolveInfo.flags & android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0;
 
                     if (displayName.equals(packageName)) {
                         displayName = null;
                     }
 
-                    ApplicationInfo application = new ApplicationInfo(packageName, displayName, icon, currentMode);
+                    ApplicationInfo application = new ApplicationInfo(packageName, displayName, icon, currentMode, isSystem);
 
                     allApplications.add(application);
                 }
@@ -143,9 +171,9 @@ public class PresetsActivity extends AppCompatActivity {
                 Collections.sort(allApplications);
 
                 runOnUiThread(() -> {
-                    filteredApplications.addAll(allApplications);
-                    progressBar.setVisibility(View.GONE);
-                    adapter.notifyDataSetChanged();
+                    loadingView.setVisibility(View.GONE);
+                    findViewById(R.id.list).setVisibility(View.VISIBLE);
+                    applyFilter(currentQuery);
                 });
 
                 executor.shutdown();
@@ -156,17 +184,20 @@ public class PresetsActivity extends AppCompatActivity {
     @SuppressLint("NotifyDataSetChanged")
     private void applyFilter(String query) {
         filteredApplications.clear();
+        boolean showSystem = showSystemAppsSwitch.isChecked();
+        String lowerQuery = query.toLowerCase();
 
-        if (query.isEmpty()) {
-            filteredApplications.addAll(allApplications);
-        } else {
-            query = query.toLowerCase();
+        for (ApplicationInfo application : allApplications) {
+            if (!showSystem && application.isSystem()) {
+                continue;
+            }
 
-            for (ApplicationInfo application : allApplications) {
+            if (query.isEmpty()) {
+                filteredApplications.add(application);
+            } else {
                 String displayName = application.getDisplayName();
-
-                boolean matchDisplayName = displayName != null && displayName.toLowerCase().contains(query);
-                boolean matchPackageName = application.getPackageName().contains(query);
+                boolean matchDisplayName = displayName != null && displayName.toLowerCase().contains(lowerQuery);
+                boolean matchPackageName = application.getPackageName().contains(lowerQuery);
 
                 if (matchDisplayName || matchPackageName) {
                     filteredApplications.add(application);
@@ -247,6 +278,7 @@ class ApplicationInfo implements Comparable<ApplicationInfo> {
     private @Nullable String displayName;
     private Drawable icon;
     private @Nullable RotationMode currentMode;
+    private boolean isSystem;
 
     public boolean hasName() {
         return displayName != null;

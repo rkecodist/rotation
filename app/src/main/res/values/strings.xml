@@ -41,8 +41,8 @@
     ">
 
     <string name="configure_presets_key">configure_presets</string>
-    <string name="configure_presets_title">Configure per Application</string>
-    <string name="configure_presets_description">Set the mode depending on the application (when switching to it). Accessibility permission is required, and must be re-allowed after each update.</string>
+    <string name="configure_presets_title">Application Rotation Configuration</string>
+    <string name="configure_presets_description">Set rotation mode in application and it will trigger when switching to it</string>
 
     <string name="start_control_key">start_control</string>
     <string name="start_control_title">Start controlling rotation</string>
@@ -130,7 +130,7 @@
     <string name="accessibility_permission_required_negative">Cancel</string>
     <string name="accessibility_service_description">Permission is required to properly detect when you change application.</string>
 
-    <string name="presets_title">Presets</string>
+    <string name="presets_title">Applications</string>
     <string name="presets_application_no_name">(no name)</string>
     <string name="presets_mode">Mode: %s</string>
     <string name="presets_mode_default">Default mode</string>
@@ -138,6 +138,9 @@
     <string name="presets_change_title">Select Rotation Mode for %s</string>
     <string name="presets_change_positive">Change</string>
     <string name="presets_change_negative">Cancel</string>
+
+    <string name="loading_apps">Loading applications...</string>
+    <string name="show_system_apps">Show System Apps</string>
 
     <string name="presets_used_key">presets_used</string>
     <string name="presets_notified_accessibility_key">presets_notified_accessibility</string>
