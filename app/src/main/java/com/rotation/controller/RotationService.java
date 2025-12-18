@@ -243,6 +243,13 @@ public class RotationService extends Service {
                         .putString(getString(R.string.mode_key), newMode.toString())
                         .apply();
 
+                if (isCharging()) {
+                    PreferenceManager.getDefaultSharedPreferences(this)
+                            .edit()
+                            .putString(getString(R.string.saved_original_mode_for_charge_key), activeMode.name())
+                            .apply();
+                }
+
                 break;
             }
 
@@ -287,6 +294,13 @@ public class RotationService extends Service {
                         .edit()
                         .putString(getString(R.string.mode_key), activeMode.name())
                         .apply();
+
+                if (isCharging()) {
+                    PreferenceManager.getDefaultSharedPreferences(this)
+                            .edit()
+                            .putString(getString(R.string.saved_original_mode_for_charge_key), activeMode.name())
+                            .apply();
+                }
 
                 break;
             }
@@ -655,6 +669,15 @@ public class RotationService extends Service {
         int rotationValue = getCurrentDisplayRotation();
 
         return lastDisplayRotationValue != rotationValue;
+    }
+
+    private boolean isCharging() {
+        Intent intent = registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        if (intent == null) return false;
+        int plugged = intent.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1);
+        return plugged == android.os.BatteryManager.BATTERY_PLUGGED_AC
+                || plugged == android.os.BatteryManager.BATTERY_PLUGGED_USB
+                || plugged == android.os.BatteryManager.BATTERY_PLUGGED_WIRELESS;
     }
 
     public static Intent newToggleGuardIntent(Context context) {
