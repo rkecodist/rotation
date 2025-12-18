@@ -1,4 +1,4 @@
-package dev.caceresenzo.rotationcontrol;
+package com.rotation.controller;
 
 import android.app.ActivityManager;
 import android.app.Notification;
@@ -37,7 +37,7 @@ import lombok.Getter;
 
 public class RotationService extends Service {
 
-    public static final String PACKAGE = "dev.caceresenzo.rotationcontrol";
+    public static final String PACKAGE = "com.rotation.controller";
     public static final String TAG = RotationService.class.getSimpleName();
 
     public static final String CONTROLS_CHANNEL_ID = "Controls";
@@ -70,9 +70,9 @@ public class RotationService extends Service {
 
     public static final String TINT_METHOD = "setColorFilter";
 
-    public static final String ACTION_NOTIFY_CREATED = "dev.caceresenzo.rotationcontrol.SERVICE_CREATED";
-    public static final String ACTION_NOTIFY_DESTROYED = "dev.caceresenzo.rotationcontrol.SERVICE_DESTROYED";
-    public static final String ACTION_NOTIFY_UPDATED = "dev.caceresenzo.rotationcontrol.SERVICE_UPDATED";
+    public static final String ACTION_NOTIFY_CREATED = "com.rotation.controller.SERVICE_CREATED";
+    public static final String ACTION_NOTIFY_DESTROYED = "com.rotation.controller.SERVICE_DESTROYED";
+    public static final String ACTION_NOTIFY_UPDATED = "com.rotation.controller.SERVICE_UPDATED";
 
     private final Runnable mBroadcastToggleGuardIntent = new Runnable() {
         @Override

@@ -4,8 +4,8 @@
     <style name="AppTheme"></style>
 
     <style name="AppTheme.Application" parent="@style/Theme.AppCompat.DayNight">
-        <item name="colorPrimary">@color/active</item>
-        <item name="colorPrimaryDark">@color/active</item>
+        <item name="colorPrimary">@color/black</item>
+        <item name="colorPrimaryDark">@color/black</item>
         <item name="colorAccent">@color/active</item>
     </style>
 

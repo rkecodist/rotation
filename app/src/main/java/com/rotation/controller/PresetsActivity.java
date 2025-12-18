@@ -1,4 +1,4 @@
-package dev.caceresenzo.rotationcontrol;
+package com.rotation.controller;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

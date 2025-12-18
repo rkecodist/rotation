@@ -1,4 +1,4 @@
-package dev.caceresenzo.rotationcontrol;
+package com.rotation.controller;
 
 import android.content.Intent;
 import android.content.SharedPreferences;

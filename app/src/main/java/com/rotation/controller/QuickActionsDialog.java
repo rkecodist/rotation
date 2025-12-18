@@ -1,4 +1,4 @@
-package dev.caceresenzo.rotationcontrol;
+package com.rotation.controller;
 
 import android.app.Dialog;
 import android.content.BroadcastReceiver;

@@ -1,4 +1,4 @@
-package dev.caceresenzo.rotationcontrol;
+package com.rotation.controller;
 
 import android.accessibilityservice.AccessibilityService;
 import android.app.NotificationManager;

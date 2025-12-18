@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "dev.caceresenzo.rotationcontrol"
+    namespace = "com.rotation.controller"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "dev.caceresenzo.rotationcontrol"
+        applicationId = "com.rotation.controller"
         minSdk = 29
         targetSdk = 34
         versionCode = 12
