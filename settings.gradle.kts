@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Modern Rotation Control"
+rootProject.name = "Rotation Controller"
 include(":app")
