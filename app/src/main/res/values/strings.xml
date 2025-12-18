@@ -49,8 +49,8 @@
     <string name="start_control_description">Start this application now.</string>
 
     <string name="guard_key">guard</string>
-    <string name="guard_title">Prevent apps. from changing rotation</string>
-    <string name="guard_description">This mode can prevent interaction with security prompts (e.g. APK install).</string>
+    <string name="guard_title">Rotation Control Guard</string>
+    <string name="guard_description">This mode can prevent interaction with security prompt by turning auto rotation on</string>
 
     <string name="mode_key">mode</string>
     <string name="mode_title">Rotation mode</string>

@@ -11,7 +11,7 @@
             app:title="@string/start_control_title" />
 
         <SwitchPreferenceCompat
-            app:defaultValue="true"
+            app:defaultValue="false"
             app:iconSpaceReserved="false"
             app:key="@string/guard_key"
             app:summary="@string/guard_description"
@@ -19,8 +19,8 @@
 
         <ListPreference
             app:defaultValue="AUTO"
-            app:entries="@array/buttons_entries"
-            app:entryValues="@array/buttons_values"
+            app:entries="@array/rotation_mode_entries"
+            app:entryValues="@array/rotation_mode_values"
             app:iconSpaceReserved="false"
             app:key="@string/mode_key"
             app:summary="@string/mode_description"
