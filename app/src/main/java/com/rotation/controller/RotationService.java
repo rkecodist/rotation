@@ -371,7 +371,7 @@ public class RotationService extends Service {
         sendBroadcast(new Intent(ACTION_NOTIFY_UPDATED));
 
         RotationSharedPreferences preferences = RotationSharedPreferences.from(this);
-        preferences.setStartControl(true);
+        // preferences.setStartControl(true);
 
         // Removed accessibility notification logic as requested.
         // notificationManager.notify(PRESETS_NOTIFICATION_ID, createPresetsNotification());
@@ -774,6 +774,8 @@ public class RotationService extends Service {
     }
 
     public static void start(Context context) {
+        RotationSharedPreferences.from(context).setStartControl(true);
+
         Intent intent = new Intent(context.getApplicationContext(), RotationService.class);
         intent.setAction(ACTION_START);
 
@@ -830,6 +832,8 @@ public class RotationService extends Service {
     }
 
     public static void stop(Context context) {
+        RotationSharedPreferences.from(context).setStartControl(false);
+
         Intent intent = new Intent(context, RotationService.class);
 
         context.stopService(intent);
