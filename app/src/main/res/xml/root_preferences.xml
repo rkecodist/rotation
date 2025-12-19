@@ -77,9 +77,9 @@
             app:title="@string/smart_charge_title" />
 
         <ListPreference
-            app:defaultValue="SHOW_MODES_IF_CONTROLLING"
-            app:entries="@array/tile_click_behavior_entries"
-            app:entryValues="@array/tile_click_behavior"
+            app:defaultValue="TOGGLE_SERVICE"
+            app:entries="@array/tile_click_behavior_titles"
+            app:entryValues="@array/tile_click_behavior_values"
             app:iconSpaceReserved="false"
             app:key="@string/tile_click_behavior_key"
             app:summary="@string/tile_click_behavior_description"
