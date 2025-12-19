@@ -133,17 +133,18 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
+        Context context = getContext();
         String key = preference.getKey();
-        if (key == null) {
+        if (key == null || context == null) {
             return false;
         }
 
         if (getString(R.string.service_enabled_key).equals(key)) {
             boolean enabled = (Boolean) newValue;
             if (enabled) {
-                RotationService.start(getContext());
+                RotationService.start(context);
             } else {
-                RotationService.stop(getContext());
+                RotationService.stop(context);
             }
 
             return true;
