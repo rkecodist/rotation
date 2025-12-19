@@ -209,11 +209,10 @@ public class RotationService extends Service {
         }
 
         switch (action) {
-            // ... (keep existing cases but ensure logging is present)
             case ACTION_START: {
                 DebugLogger.log(this, "Processing ACTION_START");
                 Notification notification = createNotification(isNotificationShown());
-                // ...
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                     startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
                 } else {
@@ -221,7 +220,7 @@ public class RotationService extends Service {
                 }
                 break;
             }
-            
+
             case ACTION_TOGGLE_POWER: {
                 boolean wasEnabled = isPowerOn;
                 isPowerOn = !isPowerOn;
@@ -239,8 +238,73 @@ public class RotationService extends Service {
                 }
                 break;
             }
-            
-            // ... other cases
+
+            case ACTION_CHANGE_MODE: {
+                String newModeName = intent.getStringExtra(INTENT_NEW_MODE);
+                DebugLogger.log(this, "Processing ACTION_CHANGE_MODE: " + newModeName);
+                if (newModeName != null) {
+                    activeMode = RotationMode.valueOf(newModeName);
+                    PreferenceManager.getDefaultSharedPreferences(this)
+                            .edit()
+                            .putString(getString(R.string.mode_key), activeMode.name())
+                            .apply();
+                }
+                break;
+            }
+
+            case ACTION_CHANGE_GUARD: {
+                guard = !guard;
+                DebugLogger.log(this, "Processing ACTION_CHANGE_GUARD: " + guard);
+                PreferenceManager.getDefaultSharedPreferences(this)
+                        .edit()
+                        .putBoolean(getString(R.string.guard_key), guard)
+                        .apply();
+                break;
+            }
+
+            case ACTION_CONFIGURATION_CHANGED:
+            case ACTION_REFRESH_MODE: {
+                DebugLogger.log(this, "Processing " + action);
+                loadFromPreferences();
+                break;
+            }
+
+            case ACTION_ORIENTATION_CHANGED: {
+                DebugLogger.log(this, "Processing ACTION_ORIENTATION_CHANGED");
+                break;
+            }
+
+            case ACTION_REFRESH_NOTIFICATION: {
+                DebugLogger.log(this, "Processing ACTION_REFRESH_NOTIFICATION");
+                break;
+            }
+
+            case ACTION_PRESETS_UPDATE: {
+                String newModeName = intent.getStringExtra(INTENT_NEW_MODE);
+                DebugLogger.log(this, "Processing ACTION_PRESETS_UPDATE: " + newModeName);
+                if (newModeName != null) {
+                    if (previousActiveMode == null) {
+                        previousActiveMode = activeMode;
+                    }
+                    activeMode = RotationMode.valueOf(newModeName);
+                }
+                break;
+            }
+
+            case ACTION_PRESETS_RESTORE: {
+                DebugLogger.log(this, "Processing ACTION_PRESETS_RESTORE");
+                if (previousActiveMode != null) {
+                    activeMode = previousActiveMode;
+                    previousActiveMode = null;
+                }
+                break;
+            }
+
+            case ACTION_EXIT_SERVICE: {
+                DebugLogger.log(this, "Processing ACTION_EXIT_SERVICE");
+                stop(this);
+                return START_NOT_STICKY;
+            }
         }
 
         // ...
