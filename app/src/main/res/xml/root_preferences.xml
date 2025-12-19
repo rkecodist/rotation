@@ -5,6 +5,7 @@
         app:title="@string/control_header">
 
     <SwitchPreferenceCompat
+        app:iconSpaceReserved="false"
         app:key="@string/service_enabled_key"
         app:summary="@string/service_enabled_description"
         app:title="@string/service_enabled_title" />
