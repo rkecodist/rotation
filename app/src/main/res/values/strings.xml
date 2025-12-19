@@ -161,8 +161,6 @@
     <string name="presets_used_key">presets_used</string>
     <string name="presets_notified_accessibility_key">presets_notified_accessibility</string>
 
-    <string name="power_on_key">power_on</string>
-
     <string name="saved_accel_rotation_key">saved_accel_rotation</string>
     <string name="saved_user_rotation_key">saved_user_rotation</string>
 
