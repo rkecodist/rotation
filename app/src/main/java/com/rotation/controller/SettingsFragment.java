@@ -306,7 +306,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 || getString(R.string.show_notification_key).equals(key)
                 || getString(R.string.auto_lock_key).equals(key)
                 || getString(R.string.auto_lock_mode_key).equals(key)
-                || getString(R.string.auto_lock_force_key).equals(key)) {
+                || getString(R.string.auto_lock_force_key).equals(key)
+                || getString(R.string.power_on_key).equals(key)
+                || getString(R.string.guard_force_auto_rotation_key).equals(key)) {
             // TODO should not be called if edit comes from service itself
             RotationService.notifyConfigurationChanged(context);
         }

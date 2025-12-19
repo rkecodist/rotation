@@ -10,12 +10,27 @@
         app:summary="@string/service_enabled_description"
         app:title="@string/service_enabled_title" />
 
+    <SwitchPreferenceCompat
+        app:defaultValue="true"
+        app:iconSpaceReserved="false"
+        app:key="@string/power_on_key"
+        app:summary="@string/power_on_description"
+        app:title="@string/power_on_title" />
+
         <SwitchPreferenceCompat
-            app:defaultValue="false"
+            app:defaultValue="true"
             app:iconSpaceReserved="false"
             app:key="@string/guard_key"
             app:summary="@string/guard_description"
             app:title="@string/guard_title" />
+
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:dependency="@string/guard_key"
+            app:iconSpaceReserved="false"
+            app:key="@string/guard_force_auto_rotation_key"
+            app:summary="@string/guard_force_auto_rotation_description"
+            app:title="@string/guard_force_auto_rotation_title" />
 
         <ListPreference
             app:defaultValue="AUTO"

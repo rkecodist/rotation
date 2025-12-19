@@ -564,12 +564,33 @@ public class RotationService extends Service {
 
             if (mView == null) {
                 mView = new View(getApplicationContext());
+                mView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                    @Override
+                    public void onViewAttachedToWindow(View v) {
+                        DebugLogger.log(getApplicationContext(), "Overlay View attached to window");
+                    }
+
+                    @Override
+                    public void onViewDetachedFromWindow(View v) {
+                        DebugLogger.log(getApplicationContext(), "Overlay View detached from window");
+                    }
+                });
                 getWindowManager().addView(mView, layoutParams);
+                DebugLogger.log(this, "Overlay View added. isShown=" + mView.isShown());
             } else {
                 getWindowManager().updateViewLayout(mView, layoutParams);
+                DebugLogger.log(this, "Overlay View updated. isShown=" + mView.isShown());
             }
 
-            Settings.System.putInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 1);
+            boolean forceAutoRotation = PreferenceManager.getDefaultSharedPreferences(this)
+                    .getBoolean(getString(R.string.guard_force_auto_rotation_key), true);
+
+            if (forceAutoRotation) {
+                Settings.System.putInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 1);
+                DebugLogger.log(this, "System Auto-Rotation forced ON by Guard");
+            } else {
+                DebugLogger.log(this, "System Auto-Rotation NOT forced (preference disabled)");
+            }
         } else {
             if (mView != null) {
                 getWindowManager().removeView(mView);

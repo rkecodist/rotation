@@ -48,9 +48,17 @@
     <string name="service_enabled_title">Enable Rotation Service</string>
     <string name="service_enabled_description">Start the main background service.</string>
 
+    <string name="guard_title">Guard Mode</string>
+    <string name="guard_description">Creating a hidden overlay and turning on auto rotation</string>
     <string name="guard_key">guard</string>
-    <string name="guard_title">Rotation Control Guard</string>
-    <string name="guard_description">This mode can prevent interaction with security prompt by turning auto rotation on</string>
+
+    <string name="guard_force_auto_rotation_title">Force Auto Rotation</string>
+    <string name="guard_force_auto_rotation_description">Automatically enable system auto-rotation when Guard Mode is active</string>
+    <string name="guard_force_auto_rotation_key">guard_force_auto_rotation</string>
+
+    <string name="power_on_title">Power</string>
+    <string name="power_on_description">Master switch for rotation control logic</string>
+    <string name="power_on_key">power_on</string>
 
     <string name="mode_key">mode</string>
     <string name="mode_title">Rotation mode</string>
