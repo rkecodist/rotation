@@ -36,10 +36,61 @@ public class QuickActionsDialog extends Dialog implements View.OnClickListener, 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-// ... existing code ...
+
+        setContentView(R.layout.quick_actions_dialog);
+
+        for (RotationMode mode : RotationMode.values()) {
+            ImageView view = findViewById(mode.viewId());
+            view.setOnClickListener(this);
+        }
+
+        ImageView guardView = findViewById(R.id.guard);
+        guardView.setOnClickListener(this);
+
+        ImageView toggleServiceButton = findViewById(R.id.toggle_service);
+        toggleServiceButton.setOnClickListener(this);
+
+        TextView infoView = findViewById(R.id.info);
+        if (RotationService.isRunning(getContext())) {
+            infoView.setVisibility(View.GONE);
+        }
+
         updateViews(false, null);
     }
-// ... existing onClick ...
+
+    @Override
+    public void onClick(View view) {
+        final Context context = getContext();
+
+        Intent intent = null;
+
+        int viewId = view.getId();
+        if (viewId == R.id.guard) {
+            intent = RotationService.newToggleGuardIntent(context);
+        } else if (viewId == R.id.toggle_service) {
+            intent = RotationService.newTogglePowerIntent(context);
+        } else {
+            RotationMode newMode = RotationMode.fromViewId(viewId);
+            if (newMode != null) {
+                intent = RotationService.newChangeModeIntent(context, newMode);
+            }
+        }
+
+        if (intent == null) {
+            return;
+        }
+
+        if (!RotationService.isRunning(context)) {
+            RotationService.start(context);
+        }
+
+        context.startService(intent);
+
+        if (shouldCloseOnClick()) {
+            cancel();
+        }
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
