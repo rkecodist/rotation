@@ -92,12 +92,9 @@ public class RotationTileService extends TileService implements ServiceConnectio
         Log.i(TAG, "onClick");
         DebugLogger.log(this, "onClick");
 
-        // Single Source of Truth 1: Master Service Switch
-        boolean isServiceRunning = RotationService.isRunning(this);
-
-        // If Service is OFF, ANY click starts it.
-        if (!isServiceRunning) {
-            DebugLogger.log(this, "onClick: Service is OFF. Starting Service.");
+        // If Service is visually OFF, ANY click starts it.
+        if (isVisualServiceOff()) {
+            DebugLogger.log(this, "onClick: Service is visually OFF. Starting Service.");
             setTileUnavailable();
             RotationService.start(this);
             return;
@@ -131,6 +128,17 @@ public class RotationTileService extends TileService implements ServiceConnectio
         }
     }
 
+    private boolean isVisualServiceOff() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean serviceEnabledPref = preferences.getBoolean(getString(R.string.service_enabled_key), false);
+        
+        if (mService != null) {
+            return !mService.isStarted();
+        }
+        
+        return !serviceEnabledPref;
+    }
+
     public void setTileUnavailable() {
         Tile tile = getQsTile();
         tile.setState(Tile.STATE_UNAVAILABLE);
@@ -139,13 +147,17 @@ public class RotationTileService extends TileService implements ServiceConnectio
 
     public void updateTile(boolean running) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean serviceEnabled = preferences.getBoolean(getString(R.string.service_enabled_key), false);
 
         RotationMode activeMode = RotationMode.fromPreferences(this);
         boolean guard = preferences.getBoolean(getString(R.string.guard_key), true);
         boolean presets = false;
         boolean powerOn = preferences.getBoolean(getString(R.string.power_on_key), true);
 
-        updateTile(running, powerOn, activeMode, guard, presets);
+        // Visual state: ON only if preference is true AND it's actually running (started)
+        // However, if we just bound to it, 'running' is true. 
+        // We really want to know if it's 'started'.
+        updateTile(serviceEnabled && running, powerOn, activeMode, guard, presets);
     }
 
     public void updateTileUsingService() {
@@ -153,8 +165,9 @@ public class RotationTileService extends TileService implements ServiceConnectio
         boolean guard = mService.isGuardEnabledOrForced();
         boolean presets = mService.isUsingPresets();
         boolean powerOn = mService.isPowerOn();
+        boolean isStarted = mService.isStarted();
 
-        updateTile(true, powerOn, activeMode, guard, presets);
+        updateTile(isStarted, powerOn, activeMode, guard, presets);
     }
 
     public void updateTile(boolean running, boolean powerOn, RotationMode activeMode, boolean guard, boolean presets) {

@@ -45,8 +45,10 @@ public class MainActivity extends AppCompatActivity {
         if (checkPermissions(true)) {
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
             boolean shouldStart = sharedPreferences.getBoolean(getString(R.string.service_enabled_key), false);
+            DebugLogger.log(this, String.format("MainActivity onCreate: service_enabled pref is %s", shouldStart));
 
             if (shouldStart) {
+                DebugLogger.log(this, "MainActivity: starting service based on pref");
                 RotationService.start(this);
             }
         }

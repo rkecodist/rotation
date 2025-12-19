@@ -97,6 +97,7 @@ public class RotationService extends Service {
 
     private final IBinder binder = new LocalBinder();
 
+    private @Getter boolean isStarted = false;
     private @Getter boolean guard = true;
     private @Getter RotationMode activeMode = RotationMode.AUTO;
     private @Getter RotationMode previousActiveMode = null;
@@ -178,12 +179,8 @@ public class RotationService extends Service {
 
         sendBroadcast(new Intent(ACTION_NOTIFY_DESTROYED));
 
+        isStarted = false;
         DebugLogger.log(this, "Service onDestroy called. Service stopping.");
-
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .edit()
-                .putBoolean(getString(R.string.service_enabled_key), false)
-                .apply();
 
         getNotificationManager().cancel(NOTIFICATION_ID);
 
@@ -205,6 +202,7 @@ public class RotationService extends Service {
 
         String action = intent.getAction();
         DebugLogger.log(this, String.format("onStartCommand: action=%s, flags=%d, startId=%d", action, flags, startId));
+        isStarted = true;
 
         if (action == null) {
             return START_NOT_STICKY;
@@ -482,12 +480,11 @@ public class RotationService extends Service {
     private void applyMode() {
         ContentResolver contentResolver = getContentResolver();
 
-        if (!isPowerOn) {
+        if (!isStarted || !isPowerOn) {
             if (mView != null) {
                 getWindowManager().removeView(mView);
                 mView = null;
             }
-            // Logic handled by restoreSystemState called in ACTION_TOGGLE_POWER
             return;
         }
 

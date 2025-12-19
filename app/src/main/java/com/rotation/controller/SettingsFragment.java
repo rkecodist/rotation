@@ -291,6 +291,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, @Nullable String key) {
         Log.i(TAG, String.format("onSharedPreferenceChanged - key=%s", key));
+        DebugLogger.log(getContext(), String.format("onSharedPreferenceChanged: key=%s", key));
 
         Context context = getContext();
         if (context == null) {
@@ -314,10 +315,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     private void refresh(SharedPreferences sharedPreferences) {
+        DebugLogger.log(getContext(), "refreshing UI state from preferences");
         {
             String key = getString(R.string.service_enabled_key);
             boolean value = sharedPreferences.getBoolean(key, false);
-            ((SwitchPreferenceCompat) findPreference(key)).setChecked(value);
+            DebugLogger.log(getContext(), String.format("refresh: setting %s to %s", key, value));
+            SwitchPreferenceCompat pref = (SwitchPreferenceCompat) findPreference(key);
+            if (pref != null) {
+                pref.setChecked(value);
+            }
         }
 
         {
