@@ -33,6 +33,7 @@ public class RotationTileService extends TileService implements ServiceConnectio
         super.onStartListening();
 
         Log.i(TAG, "onStartListening");
+        DebugLogger.log(this, "onStartListening");
 
         if (mListener == null) {
             mListener = new Listener();
@@ -58,6 +59,7 @@ public class RotationTileService extends TileService implements ServiceConnectio
         super.onStopListening();
 
         Log.i(TAG, "onStopListening");
+        DebugLogger.log(this, "onStopListening");
 
         if (mListener != null) {
             unregisterReceiver(mListener);
@@ -88,12 +90,14 @@ public class RotationTileService extends TileService implements ServiceConnectio
         super.onClick();
 
         Log.i(TAG, "onClick");
+        DebugLogger.log(this, "onClick");
 
         // Single Source of Truth 1: Master Service Switch
         boolean isServiceRunning = RotationService.isRunning(this);
 
         // If Service is OFF, ANY click starts it.
         if (!isServiceRunning) {
+            DebugLogger.log(this, "onClick: Service is OFF. Starting Service.");
             setTileUnavailable();
             RotationService.start(this);
             return;
@@ -101,10 +105,12 @@ public class RotationTileService extends TileService implements ServiceConnectio
 
         // If Service is ON, check behavior
         TileClickBehavior tileClickBehavior = TileClickBehavior.fromPreferences(this);
+        DebugLogger.log(this, String.format("onClick: Service is ON. Behavior=%s", tileClickBehavior));
 
         switch (tileClickBehavior) {
             case TOGGLE_SERVICE: {
                 // Master Switch OFF
+                DebugLogger.log(this, "onClick: Toggling Service OFF");
                 setTileUnavailable();
                 RotationService.stop(this);
                 break;
@@ -112,11 +118,13 @@ public class RotationTileService extends TileService implements ServiceConnectio
 
             case TOGGLE_POWER: {
                 // Logic Switch Toggle
+                DebugLogger.log(this, "onClick: Toggling Power");
                 startService(RotationService.newTogglePowerIntent(this));
                 break;
             }
 
             case SHOW_MODES: {
+                DebugLogger.log(this, "onClick: Showing Modes");
                 showDialog(new QuickActionsDialog(this));
                 break;
             }
@@ -150,6 +158,7 @@ public class RotationTileService extends TileService implements ServiceConnectio
     }
 
     public void updateTile(boolean running, boolean powerOn, RotationMode activeMode, boolean guard, boolean presets) {
+        DebugLogger.log(this, String.format("updateTile: running=%s, powerOn=%s, mode=%s, guard=%s", running, powerOn, activeMode, guard));
         Tile tile = getQsTile();
         TileClickBehavior behavior = TileClickBehavior.fromPreferences(this);
 
@@ -245,6 +254,7 @@ public class RotationTileService extends TileService implements ServiceConnectio
             }
 
             Log.d(TAG, String.format("received intent - action=%s", action));
+            DebugLogger.log(context, String.format("Tile Listener received: %s", action));
 
             switch (action) {
                 case RotationService.ACTION_NOTIFY_CREATED: {
