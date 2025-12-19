@@ -26,6 +26,8 @@ public class QuickActionsDialog extends Dialog implements View.OnClickListener, 
     private final Listener mListener = new Listener();
 
     private RotationService mService;
+    private boolean isBound = false;
+    private boolean isRegistered = false;
 
     public QuickActionsDialog(@NonNull Context context) {
         super(new ContextThemeWrapper(context, R.style.AppTheme_QuickActionsDialog));
@@ -34,61 +36,10 @@ public class QuickActionsDialog extends Dialog implements View.OnClickListener, 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.quick_actions_dialog);
-
-        for (RotationMode mode : RotationMode.values()) {
-            ImageView view = findViewById(mode.viewId());
-            view.setOnClickListener(this);
-        }
-
-        ImageView guardView = findViewById(R.id.guard);
-        guardView.setOnClickListener(this);
-
-        ImageView toggleServiceButton = findViewById(R.id.toggle_service);
-        toggleServiceButton.setOnClickListener(this);
-
-        TextView infoView = findViewById(R.id.info);
-        if (RotationService.isRunning(getContext())) {
-            infoView.setVisibility(View.GONE);
-        }
-
+// ... existing code ...
         updateViews(false, null);
     }
-
-    @Override
-    public void onClick(View view) {
-        final Context context = getContext();
-
-        Intent intent = null;
-
-        int viewId = view.getId();
-        if (viewId == R.id.guard) {
-            intent = RotationService.newToggleGuardIntent(context);
-        } else if (viewId == R.id.toggle_service) {
-            intent = RotationService.newTogglePowerIntent(context);
-        } else {
-            RotationMode newMode = RotationMode.fromViewId(viewId);
-            if (newMode != null) {
-                intent = RotationService.newChangeModeIntent(context, newMode);
-            }
-        }
-
-        if (intent == null) {
-            return;
-        }
-
-        if (!RotationService.isRunning(context)) {
-            RotationService.start(context);
-        }
-
-        context.startService(intent);
-
-        if (shouldCloseOnClick()) {
-            cancel();
-        }
-    }
-
+// ... existing onClick ...
     @Override
     protected void onStart() {
         super.onStart();
@@ -96,10 +47,11 @@ public class QuickActionsDialog extends Dialog implements View.OnClickListener, 
         final Context context = getContext();
 
         Intent intent = new Intent(context, RotationService.class);
-        context.bindService(intent, this, Context.BIND_AUTO_CREATE);
+        isBound = context.bindService(intent, this, Context.BIND_AUTO_CREATE);
 
         IntentFilter filter = new IntentFilter(RotationService.ACTION_NOTIFY_UPDATED);
         ContextCompat.registerReceiver(context, mListener, filter, ContextCompat.RECEIVER_EXPORTED);
+        isRegistered = true;
     }
 
     @Override
@@ -108,16 +60,32 @@ public class QuickActionsDialog extends Dialog implements View.OnClickListener, 
 
         final Context context = getContext();
 
-        if (mService != null) {
-            context.unbindService(this);
-            mService = null;
+        if (isBound) {
+            try {
+                context.unbindService(this);
+            } catch (IllegalArgumentException e) {
+                DebugLogger.log(context, "Error unbinding service: " + e.getMessage());
+            }
+            isBound = false;
         }
+        mService = null;
 
-        context.unregisterReceiver(mListener);
+        if (isRegistered) {
+            try {
+                context.unregisterReceiver(mListener);
+            } catch (IllegalArgumentException e) {
+                DebugLogger.log(context, "Error unregistering receiver: " + e.getMessage());
+            }
+            isRegistered = false;
+        }
     }
 
     @Override
     public void onServiceConnected(ComponentName className, IBinder service) {
+        if (!isBound) {
+            return;
+        }
+
         RotationService.LocalBinder binder = (RotationService.LocalBinder) service;
         mService = binder.getService();
 
