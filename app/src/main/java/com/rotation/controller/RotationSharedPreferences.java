@@ -14,14 +14,14 @@ import lombok.RequiredArgsConstructor;
 public class RotationSharedPreferences {
 
     private static boolean initializedKeys = false;
-    private static String KEY_START_CONTROL;
+    private static String KEY_SERVICE_ENABLED;
     private static String KEY_PRESETS_USED;
     private static String KEY_PRESETS_NOTIFIED_ACCESSIBILITY;
 
     private final SharedPreferences preferences;
 
-    public void setStartControl(boolean enabled) {
-        preferences.edit().putBoolean(KEY_START_CONTROL, enabled).apply();
+    public void setServiceEnabled(boolean enabled) {
+        preferences.edit().putBoolean(KEY_SERVICE_ENABLED, enabled).apply();
     }
 
     public boolean hasPresetsBeenUsed() {
@@ -69,7 +69,7 @@ public class RotationSharedPreferences {
         if (!initializedKeys) {
             initializedKeys = true;
 
-            KEY_START_CONTROL = context.getString(R.string.start_control_key);
+            KEY_SERVICE_ENABLED = context.getString(R.string.service_enabled_key);
             KEY_PRESETS_USED = context.getString(R.string.presets_used_key);
             KEY_PRESETS_NOTIFIED_ACCESSIBILITY = context.getString(R.string.presets_notified_accessibility_key);
         }

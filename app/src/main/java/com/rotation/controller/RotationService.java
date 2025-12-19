@@ -66,8 +66,8 @@ public class RotationService extends Service {
     public static final String ACTION_REFRESH_MODE = "REFRESH_MODE";
     public static final int ACTION_REFRESH_MODE_REQUEST_CODE = 40;
 
-    public static final String ACTION_TOGGLE_SERVICE = "TOGGLE_SERVICE";
-    public static final int ACTION_TOGGLE_SERVICE_REQUEST_CODE = 50;
+    public static final String ACTION_TOGGLE_POWER = "TOGGLE_POWER";
+    public static final int ACTION_TOGGLE_POWER_REQUEST_CODE = 50;
 
     public static final String ACTION_EXIT_SERVICE = "EXIT_SERVICE";
     public static final int ACTION_EXIT_SERVICE_REQUEST_CODE = 60;
@@ -101,7 +101,7 @@ public class RotationService extends Service {
     private @Getter RotationMode activeMode = RotationMode.AUTO;
     private @Getter RotationMode previousActiveMode = null;
     private @Getter boolean currentlyRefreshing = false;
-    private @Getter boolean isServiceEnabled = true;
+    private @Getter boolean isPowerOn = true;
 
     private @Getter AutoLockSettings autoLock = new AutoLockSettings();
     private @Getter int lastDisplayRotationValue = -1;
@@ -122,13 +122,14 @@ public class RotationService extends Service {
     @Override
     public void onCreate() {
         Log.i(TAG, "onCreate");
+        DebugLogger.log(this, "Service onCreate called. PowerOn: " + isPowerOn);
 
         createNotificationChannel(CONTROLS_CHANNEL_ID, R.string.controls_notification_channel_name);
         createNotificationChannel(SERVICE_CHANNEL_ID, R.string.service_notification_channel_name);
         createNotificationChannel(WARNING_CHANNEL_ID, R.string.warning_notification_channel_name);
         loadFromPreferences();
 
-        if (isServiceEnabled) {
+        if (isPowerOn) {
             saveSystemState();
         }
 
@@ -177,9 +178,11 @@ public class RotationService extends Service {
 
         sendBroadcast(new Intent(ACTION_NOTIFY_DESTROYED));
 
+        DebugLogger.log(this, "Service onDestroy called. Service stopping.");
+
         PreferenceManager.getDefaultSharedPreferences(this)
                 .edit()
-                .putBoolean(getString(R.string.start_control_key), false)
+                .putBoolean(getString(R.string.service_enabled_key), false)
                 .apply();
 
         getNotificationManager().cancel(NOTIFICATION_ID);
@@ -202,6 +205,7 @@ public class RotationService extends Service {
 
         String action = intent.getAction();
         Log.i(TAG, String.format("onStartCommand - action=%s extras=%s flags=%d startId=%d", action, intent.getExtras(), flags, startId));
+        DebugLogger.log(this, "onStartCommand action: " + action);
 
         if (action == null) {
             return START_NOT_STICKY;
@@ -321,19 +325,20 @@ public class RotationService extends Service {
                 break;
             }
 
-            case ACTION_TOGGLE_SERVICE: {
-                boolean wasEnabled = isServiceEnabled;
-                isServiceEnabled = !isServiceEnabled;
-                Log.i(TAG, String.format("toggled service enabled=%s", isServiceEnabled));
+            case ACTION_TOGGLE_POWER: {
+                boolean wasEnabled = isPowerOn;
+                isPowerOn = !isPowerOn;
+                Log.i(TAG, String.format("toggled power enabled=%s", isPowerOn));
+                DebugLogger.log(this, "Toggled Power. New State: " + isPowerOn);
 
                 PreferenceManager.getDefaultSharedPreferences(this)
                         .edit()
-                        .putBoolean(getString(R.string.service_enabled_key), isServiceEnabled)
+                        .putBoolean(getString(R.string.power_on_key), isPowerOn)
                         .apply();
 
-                if (isServiceEnabled && !wasEnabled) {
+                if (isPowerOn && !wasEnabled) {
                     saveSystemState();
-                } else if (!isServiceEnabled && wasEnabled) {
+                } else if (!isPowerOn && wasEnabled) {
                     restoreSystemState();
                 }
 
@@ -342,6 +347,7 @@ public class RotationService extends Service {
 
             case ACTION_EXIT_SERVICE: {
                 Log.i(TAG, "Exiting service via notification action");
+                DebugLogger.log(this, "Exiting service via notification action");
                 onDestroy(); // This triggers stopSelf() and cleanup
                 return START_NOT_STICKY;
             }
@@ -371,7 +377,7 @@ public class RotationService extends Service {
         sendBroadcast(new Intent(ACTION_NOTIFY_UPDATED));
 
         RotationSharedPreferences preferences = RotationSharedPreferences.from(this);
-        // preferences.setStartControl(true);
+        // preferences.setServiceEnabled(true);
 
         // Removed accessibility notification logic as requested.
         // notificationManager.notify(PRESETS_NOTIFICATION_ID, createPresetsNotification());
@@ -521,7 +527,7 @@ public class RotationService extends Service {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         guard = preferences.getBoolean(getString(R.string.guard_key), true);
-        isServiceEnabled = preferences.getBoolean(getString(R.string.service_enabled_key), true);
+        isPowerOn = preferences.getBoolean(getString(R.string.power_on_key), true);
         activeMode = RotationMode.fromPreferences(this);
 
         autoLock.load(preferences);
@@ -573,7 +579,7 @@ public class RotationService extends Service {
             layout.setViewVisibility(R.id.refresh, View.VISIBLE);
         }
 
-        if (isServiceEnabled) {
+        if (isPowerOn) {
             layout.setInt(activeMode.viewId(), TINT_METHOD, getColor(R.color.active));
             layout.setInt(R.id.toggle_service, TINT_METHOD, getColor(R.color.active));
             layout.setInt(R.id.exit_service, TINT_METHOD, getColor(R.color.inactive));
@@ -595,12 +601,12 @@ public class RotationService extends Service {
     private void applyMode() {
         ContentResolver contentResolver = getContentResolver();
 
-        if (!isServiceEnabled) {
+        if (!isPowerOn) {
             if (mView != null) {
                 getWindowManager().removeView(mView);
                 mView = null;
             }
-            // Logic handled by restoreSystemState called in ACTION_TOGGLE_SERVICE
+            // Logic handled by restoreSystemState called in ACTION_TOGGLE_POWER
             return;
         }
 
@@ -673,11 +679,11 @@ public class RotationService extends Service {
 
     private PendingIntent newToggleServicePendingIntent() {
         Intent intent = new Intent(getApplicationContext(), RotationService.class);
-        intent.setAction(ACTION_TOGGLE_SERVICE);
+        intent.setAction(ACTION_TOGGLE_POWER);
 
         return PendingIntent.getService(
                 this,
-                ACTION_TOGGLE_SERVICE_REQUEST_CODE,
+                ACTION_TOGGLE_POWER_REQUEST_CODE,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
@@ -758,9 +764,9 @@ public class RotationService extends Service {
         return intent;
     }
 
-    public static Intent newToggleServiceIntent(Context context) {
+    public static Intent newTogglePowerIntent(Context context) {
         Intent intent = new Intent(context.getApplicationContext(), RotationService.class);
-        intent.setAction(ACTION_TOGGLE_SERVICE);
+        intent.setAction(ACTION_TOGGLE_POWER);
 
         return intent;
     }
@@ -774,12 +780,18 @@ public class RotationService extends Service {
     }
 
     public static void start(Context context) {
-        RotationSharedPreferences.from(context).setStartControl(true);
+        RotationSharedPreferences.from(context).setServiceEnabled(true);
 
         Intent intent = new Intent(context.getApplicationContext(), RotationService.class);
         intent.setAction(ACTION_START);
 
-        context.startForegroundService(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent);
+        } else {
+            context.startService(intent);
+        }
+        
+        DebugLogger.log(context, "Service Start Requested");
     }
 
     public static void notifyConfigurationChanged(Context context) {
@@ -832,11 +844,12 @@ public class RotationService extends Service {
     }
 
     public static void stop(Context context) {
-        RotationSharedPreferences.from(context).setStartControl(false);
+        RotationSharedPreferences.from(context).setServiceEnabled(false);
 
         Intent intent = new Intent(context, RotationService.class);
 
         context.stopService(intent);
+        DebugLogger.log(context, "Service Stop Requested");
     }
 
     public static boolean isRunning(Context context) {
@@ -910,7 +923,7 @@ public class RotationService extends Service {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent == null || !isServiceEnabled) {
+            if (intent == null || !isPowerOn) {
                 return;
             }
 

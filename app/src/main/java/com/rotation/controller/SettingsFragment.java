@@ -60,7 +60,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                         RotationService.start(getActivity());
                     }
 
-                    setChecked(getString(R.string.start_control_key), accepted);
+                    setChecked(getString(R.string.service_enabled_key), accepted);
                 }
         );
     }
@@ -69,7 +69,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-        findPreference(getString(R.string.start_control_key)).setOnPreferenceChangeListener(this);
+        findPreference(getString(R.string.service_enabled_key)).setOnPreferenceChangeListener(this);
         findPreference(getString(R.string.show_notification_key)).setOnPreferenceChangeListener(this);
         findPreference(getString(R.string.auto_lock_key)).setOnPreferenceChangeListener(this);
 
@@ -132,31 +132,21 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     @Override
-    public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
         String key = preference.getKey();
-        Log.i(TAG, String.format("onPreferenceChange - key=%s newValue=%s", key, newValue));
-
-        Context context = getContext();
-        if (context == null) {
+        if (key == null) {
             return false;
         }
 
-        if (getString(R.string.start_control_key).equals(key)) {
-            boolean value = (boolean) newValue;
-
-            if (!value) {
-                RotationService.stop(context);
-                return true;
+        if (getString(R.string.service_enabled_key).equals(key)) {
+            boolean enabled = (Boolean) newValue;
+            if (enabled) {
+                RotationService.start(getContext());
+            } else {
+                RotationService.stop(getContext());
             }
 
-            if (hasNotificationPermission(context)) {
-                RotationService.start(context);
-                return true;
-            }
-
-            Toast.makeText(context, R.string.require_notification_permission, Toast.LENGTH_LONG).show();
-            mNotificationPermissionActivityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-            return false;
+            return true;
         }
 
         if (getString(R.string.show_notification_key).equals(key)
@@ -324,7 +314,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     private void refresh(SharedPreferences sharedPreferences) {
         {
-            String key = getString(R.string.start_control_key);
+            String key = getString(R.string.service_enabled_key);
             boolean value = sharedPreferences.getBoolean(key, false);
             ((SwitchPreferenceCompat) findPreference(key)).setChecked(value);
         }
@@ -342,21 +332,21 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         }
     }
 
-    private void setStartControlEnabled(boolean enabled) {
-        findPreference(getString(R.string.start_control_key)).setEnabled(enabled);
+    private void setServiceEnabledSwitch(boolean enabled) {
+        findPreference(getString(R.string.service_enabled_key)).setEnabled(enabled);
     }
 
     private void restartService() {
         Context context = getContext();
 
         RotationService.stop(context);
-        setStartControlEnabled(false);
+        setServiceEnabledSwitch(false);
 
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 RotationService.start(context);
-                setStartControlEnabled(true);
+                setServiceEnabledSwitch(true);
             }
         }, RESTART_SERVICE_DELAY_MILLISECOND);
     }

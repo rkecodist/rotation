@@ -66,7 +66,7 @@ public class QuickActionsDialog extends Dialog implements View.OnClickListener, 
         if (viewId == R.id.guard) {
             intent = RotationService.newToggleGuardIntent(context);
         } else if (viewId == R.id.toggle_service) {
-            intent = RotationService.newToggleServiceIntent(context);
+            intent = RotationService.newTogglePowerIntent(context);
         } else {
             RotationMode newMode = RotationMode.fromViewId(viewId);
             if (newMode != null) {
@@ -158,9 +158,9 @@ public class QuickActionsDialog extends Dialog implements View.OnClickListener, 
         }
         setActiveColor(context, guardView, guard);
 
-        boolean isServiceEnabled = preferences.getBoolean(context.getString(R.string.service_enabled_key), true);
+        boolean isPowerOn = preferences.getBoolean(context.getString(R.string.power_on_key), true);
         ImageView toggleServiceView = findViewById(R.id.toggle_service);
-        setActiveColor(context, toggleServiceView, isServiceEnabled);
+        setActiveColor(context, toggleServiceView, isPowerOn);
     }
 
     private void setActiveColor(Context context, ImageView view, boolean active) {

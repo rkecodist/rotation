@@ -4,11 +4,10 @@
         app:iconSpaceReserved="false"
         app:title="@string/control_header">
 
-        <SwitchPreferenceCompat
-            app:iconSpaceReserved="false"
-            app:key="@string/start_control_key"
-            app:summary="@string/start_control_description"
-            app:title="@string/start_control_title" />
+    <SwitchPreferenceCompat
+        app:key="@string/service_enabled_key"
+        app:summary="@string/service_enabled_description"
+        app:title="@string/service_enabled_title" />
 
         <SwitchPreferenceCompat
             app:defaultValue="false"

@@ -39,16 +39,16 @@
         <item>LANDSCAPE_SENSOR</item>
     </string-array>
 
-    <string-array name="tile_click_behavior_entries">
-        <item>Toggle Control</item>
-        <item>Show Modes if Controlling</item>
-        <item>Always Show Modes</item>
+    <string-array name="tile_click_behavior_titles">
+        <item>@string/tile_click_behavior_toggle_service</item>
+        <item>@string/tile_click_behavior_toggle_power</item>
+        <item>@string/tile_click_behavior_show_modes</item>
     </string-array>
 
-    <string-array name="tile_click_behavior">
-        <item>TOGGLE_CONTROL</item>
-        <item>SHOW_MODES_IF_CONTROLLING</item>
-        <item>ALWAYS_SHOW_MODES</item>
+    <string-array name="tile_click_behavior_values">
+        <item>TOGGLE_SERVICE</item>
+        <item>TOGGLE_POWER</item>
+        <item>SHOW_MODES</item>
     </string-array>
 
     <string-array name="refresh_mode_delay_entries">

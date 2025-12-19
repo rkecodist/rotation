@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (checkPermissions(true)) {
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-            boolean shouldStart = sharedPreferences.getBoolean(getString(R.string.start_control_key), false);
+            boolean shouldStart = sharedPreferences.getBoolean(getString(R.string.service_enabled_key), false);
 
             if (shouldStart) {
                 RotationService.start(this);

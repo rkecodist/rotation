@@ -19,14 +19,11 @@ public class UnlockBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-
-        boolean startControl = sharedPreferences.getBoolean(context.getString(R.string.start_control_key), false);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         boolean refreshOnUnlock = sharedPreferences.getBoolean(context.getString(R.string.refresh_on_unlock_key), false);
+        boolean startControl = sharedPreferences.getBoolean(context.getString(R.string.service_enabled_key), false);
 
-        Log.i(TAG, String.format("Received Unlock, start control? %s, refresh on unlock? %s", startControl, refreshOnUnlock));
-
-        if (!startControl || !refreshOnUnlock) {
+        if (!startControl) {
             return;
         }
 

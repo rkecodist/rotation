@@ -89,35 +89,35 @@ public class RotationTileService extends TileService implements ServiceConnectio
 
         Log.i(TAG, "onClick");
 
+        // Single Source of Truth 1: Master Service Switch
+        boolean isServiceRunning = RotationService.isRunning(this);
+
+        // If Service is OFF, ANY click starts it.
+        if (!isServiceRunning) {
+            setTileUnavailable();
+            RotationService.start(this);
+            return;
+        }
+
+        // If Service is ON, check behavior
         TileClickBehavior tileClickBehavior = TileClickBehavior.fromPreferences(this);
 
         switch (tileClickBehavior) {
-            case TOGGLE_CONTROL: {
+            case TOGGLE_SERVICE: {
+                // Master Switch OFF
                 setTileUnavailable();
-
-                if (RotationService.isRunning(this)) {
-                    RotationService.stop(this);
-                } else {
-                    RotationService.start(this);
-                }
-
+                RotationService.stop(this);
                 break;
             }
 
-            case SHOW_MODES_IF_CONTROLLING: {
-                if (RotationService.isRunning(this)) {
-                    showDialog(new QuickActionsDialog(this));
-                } else {
-                    setTileUnavailable();
-                    RotationService.start(this);
-                }
-
+            case TOGGLE_POWER: {
+                // Logic Switch Toggle
+                startService(RotationService.newTogglePowerIntent(this));
                 break;
             }
 
-            case ALWAYS_SHOW_MODES: {
+            case SHOW_MODES: {
                 showDialog(new QuickActionsDialog(this));
-
                 break;
             }
         }
@@ -135,46 +135,100 @@ public class RotationTileService extends TileService implements ServiceConnectio
         RotationMode activeMode = RotationMode.fromPreferences(this);
         boolean guard = preferences.getBoolean(getString(R.string.guard_key), true);
         boolean presets = false;
+        boolean powerOn = preferences.getBoolean(getString(R.string.power_on_key), true);
 
-        updateTile(running, activeMode, guard, presets);
+        updateTile(running, powerOn, activeMode, guard, presets);
     }
 
     public void updateTileUsingService() {
         RotationMode activeMode = mService.getActiveMode();
         boolean guard = mService.isGuardEnabledOrForced();
         boolean presets = mService.isUsingPresets();
+        boolean powerOn = mService.isPowerOn();
 
-        updateTile(true, activeMode, guard, presets);
+        updateTile(true, powerOn, activeMode, guard, presets);
     }
 
-    public void updateTile(boolean running, RotationMode activeMode, boolean guard, boolean presets) {
+    public void updateTile(boolean running, boolean powerOn, RotationMode activeMode, boolean guard, boolean presets) {
         Tile tile = getQsTile();
+        TileClickBehavior behavior = TileClickBehavior.fromPreferences(this);
 
-        String suffix = "";
-
-        if (guard) {
-            suffix = " " + getString(R.string.tile_with_guard);
-        }
-
-        if (presets) {
-            suffix = " " + getString(R.string.tile_with_presets);
-        }
-
-        tile.setIcon(getIconWith(activeMode, guard, presets));
-
-        String prefix;
-        if (running) {
-            tile.setState(Tile.STATE_ACTIVE);
-            prefix = getString(R.string.tile_active);
-        } else {
+        // Condition 1: Service OFF -> Tile Inactive, "Service Off"
+        if (!running) {
             tile.setState(Tile.STATE_INACTIVE);
-            prefix = getString(R.string.tile_inactive);
+            tile.setLabel(getString(R.string.tile_title));
+            tile.setSubtitle(getString(R.string.tile_service_off));
+            tile.setIcon(Icon.createWithResource(this, R.drawable.mode_auto)); // Default/Inactive icon
+            tile.updateTile();
+            return;
         }
 
-        tile.setSubtitle(String.format("%s: %s%s", prefix, getString(activeMode.stringId()), suffix));
-        tile.updateTile();
+        // Condition 2: Service ON
+        String suffix = "";
+        if (guard) suffix += " " + getString(R.string.tile_with_guard);
+        if (presets) suffix += " " + getString(R.string.tile_with_presets);
 
-        Log.d(TAG, String.format("updated tile - running=%s activeMode=%s guard=%s presets=%s", running, activeMode, guard, presets));
+        if (behavior == TileClickBehavior.TOGGLE_SERVICE) {
+            // Behavior: Toggle Service
+            // Service is running, so it's Active
+            tile.setState(Tile.STATE_ACTIVE);
+            tile.setLabel(getString(R.string.tile_title));
+            tile.setSubtitle(getString(R.string.tile_service_on));
+            tile.setIcon(getIconWith(activeMode, guard, presets));
+
+        } else if (behavior == TileClickBehavior.TOGGLE_POWER) {
+            // Behavior: Toggle Power
+            if (powerOn) {
+                tile.setState(Tile.STATE_ACTIVE);
+                tile.setLabel(getString(R.string.tile_title));
+                tile.setSubtitle(getString(R.string.tile_power_on));
+                tile.setIcon(getIconWith(activeMode, guard, presets));
+            } else {
+                tile.setState(Tile.STATE_INACTIVE);
+                tile.setLabel(getString(R.string.tile_title));
+                tile.setSubtitle(getString(R.string.tile_power_off));
+                tile.setIcon(Icon.createWithResource(this, R.drawable.mode_auto)); // Or specific off icon
+            }
+
+        } else { // SHOW_MODES
+            // Behavior: Show Modes
+            // Always Active if Service is Running (Power state affects internal logic, but Mode is what we show)
+            // Ideally, if Power is OFF, maybe we show "Paused"? But requirement says "Active: $Mode"
+            // Let's stick to the mode display, maybe indicate paused in subtitle if needed.
+            // Requirement: "Active: $Mode" (no active/inactive text)
+
+            tile.setState(Tile.STATE_ACTIVE);
+            tile.setLabel(getString(R.string.tile_title));
+            
+            // If Power is OFF, we might want to indicate it, but the requirement was specific about "$Mode"
+            // "Active: $Mode" was the old behavior. New requirement: "(subtitle: $Mode)"
+            // Let's refine based on "Power Off" state?
+            // "system wide state for service off and on... if service is OFF... INACTIVE (Service Off)" - Handled.
+            // "then after turning on it will follow their behaviour"
+
+            if (!powerOn) {
+                // If logic is paused, showing the Mode might be misleading if it's not applying.
+                // However, the user might want to know what mode *will* apply.
+                // Let's append (Paused) or similar if power is off? 
+                // Or just show "Power Off" if that overrides everything?
+                // Returning to requirement 3: "Active: $Mode" (Subtitle: $Mode). 
+                
+                // Let's respect the "System Wide State" rule first.
+                // If Power is Off (Logic paused), effectively the Tile isn't doing anything to rotation.
+                // But the Behavior is SHOW_MODES.
+                
+                // Let's display the Mode, maybe with a visual cue?
+                // For now, simple:
+                tile.setSubtitle(getString(activeMode.stringId()) + suffix);
+            } else {
+                 tile.setSubtitle(getString(activeMode.stringId()) + suffix);
+            }
+            
+            tile.setIcon(getIconWith(activeMode, guard, presets));
+        }
+
+        tile.updateTile();
+        Log.d(TAG, String.format("updated tile - running=%s power=%s activeMode=%s", running, powerOn, activeMode));
     }
 
     public class Listener extends BroadcastReceiver {
